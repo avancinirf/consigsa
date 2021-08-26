@@ -17,3 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::apiResource('client', 'ClientController');
+Route::apiResource('file', 'FileController');
+Route::apiResource('geotype', 'GeotypeController');
+Route::apiResource('project', 'ProjectController');
+Route::apiResource('shape', 'ShapeController');
+
