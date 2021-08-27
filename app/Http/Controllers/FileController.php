@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use App\Models\File;
 use Illuminate\Http\Request;
 
@@ -18,8 +19,9 @@ class FileController extends Controller
      */
     public function index()
     {
-        $files = $this->file->all();
-        return response()->json($files, 200);
+        // Forma para retornar a lista limpa, apenas os arquivos, sem a redundância dos projetos.
+        //return response()->json($this->file->all(), 200);
+        return response()->json($this->file->with('project')->get(), 200);
     }
 
     /**
@@ -42,17 +44,17 @@ class FileController extends Controller
     {
         $request->validate($this->file->rules(), $this->file->feedback());
 
-        $file        = $request->file('file');
-        $folder_name = "client_{$request->client_id}/project_{$request->project_id}/files";
-        $file_urn    = $file->store($folder_name, 'local');
+        $archive     = $request->file('file');
+        $folder_name = "/project_{$request->project_id}/files";
+        $archive_urn = $archive->store($folder_name, 'local');
 
-        $db_file = $this->file->create([
+        $file = $this->file->create([
             'name'        => $request->name,
             'description' => $request->description,
-            'file'        => $file_urn
+            'file'        => $archive_urn,
+            'project_id'  => $request->project_id
         ]);
 
-        //$file = $this->file->create($request->all());
         return response()->json($file, 201);
     }
 
@@ -64,7 +66,7 @@ class FileController extends Controller
      */
     public function show($id)
     {
-        $file = $this->file->find($id);
+        $file = $this->file->with('project')->find($id);
         if ( !$file ) {
             return response()->json(['error' => 'Arquivo não encontrado.'], 404);
         }
@@ -104,13 +106,24 @@ class FileController extends Controller
                     $dynamicRules[$input] = $rule;
                 }
             }
-
             $request->validate($dynamicRules, $file->feedback());
         } else {
             $request->validate($file->rules(), $file->feedback());
         }
 
-        $file->update($request->all());
+        if ($request->file('file')) {
+            Storage::disk('local')->delete($file->file);
+            $archive     = $request->file('file');
+            $project_id  = $request->project_id ?? $file->project_id;
+            $folder_name = "project_{$project_id}/files";
+            $archive_urn = $archive->store($folder_name, 'local');
+        } else {
+            $archive_urn = $file->file;
+        }
+
+        $file->fill($request->all());
+        $file->file = $archive_urn;
+        $file->save();
         return response()->json($file, 200);
     }
 
@@ -123,9 +136,13 @@ class FileController extends Controller
     public function destroy($id)
     {
         $file = $this->file->find($id);
+
         if ( !$file ) {
             return response()->json(['error' => 'Arquivo não encontrado.'], 404);
         }
+
+        Storage::disk('local')->delete($file->file);
+
         $file->delete();
         return response()->json(['message' => 'Arquivo removido com sucesso.'], 200);
     }

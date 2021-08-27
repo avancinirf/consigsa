@@ -18,8 +18,7 @@ class GeotypeController extends Controller
      */
     public function index()
     {
-        $geotypes = $this->geotype->all();
-        return response()->json($geotypes, 200);
+        return response()->json($this->geotype->all(), 200);
     }
 
     /**
