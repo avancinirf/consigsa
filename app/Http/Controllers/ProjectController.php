@@ -15,13 +15,45 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Forma para retornar a lista limpa, apenas os projetos, sem os arquivos.
+        $projects = [];
+
+        /* Define os campos a serem exibidos nos "files" de cada projeto. */
+        if ($request->has('attrs_files')) {
+            $attrs_files = $request->attrs_files;
+            $projects = $this->project->with('files:id,'.$attrs_files.',project_id');
+        } else {
+            $projects = $this->project->with('files');
+        }
+
+        /* Define os filtros a serem aplicados nos campos para cada projeto. (cláusula WHERE) */
+        if ($request->has('filters')) {
+            $filters = str_replace( '\\', '', $request->filter );
+            $filters = explode( ';', $request->filters );
+
+            foreach( $filters as $key => $filter ) {
+                $f = explode(':', $filter);
+                $projects = $projects->where($f[0], $f[1], $f[2]);
+            }
+        }
+
+        /* Define os campos a serem exibidos nos projeto. */
+        if ($request->has('attrs')) {
+            $attrs = $request->attrs;
+            $projects = $projects->selectRaw('id,'.$attrs)->get();
+        } else {
+            $projects = $projects->get();
+        }
+
+        return response()->json($projects, 200);
+
+        /* Forma para retornar a lista limpa, apenas os projetos, com e sem os arquivos, mas sem filtrar os atributos e os valores */
         //return response()->json($this->project->all(), 200);
-        return response()->json($this->project->with('files')->get(), 200);
+        //return response()->json($this->project->with('files')->get(), 200);
     }
 
     /**

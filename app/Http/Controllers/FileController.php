@@ -15,13 +15,40 @@ class FileController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Forma para retornar a lista limpa, apenas os arquivos, sem a redundância dos projetos.
-        //return response()->json($this->file->all(), 200);
-        return response()->json($this->file->with('project')->get(), 200);
+        $files = [];
+
+        // Filter projects attributes
+        if ($request->has('attrs_project')) {
+            $attrs_project = $request->attrs_project;
+            $files = $this->file->with('project:id,'.$attrs_project);
+        } else {
+            $files = $this->file->with('project');
+        }
+
+        if ($request->has('filters')) {
+            $filters = str_replace( '\\', '', $request->filter );
+            $filters = explode( ';', $request->filters );
+
+            foreach( $filters as $key => $filter ) {
+                $f = explode(':', $filter);
+                $files = $files->where($f[0], $f[1], $f[2]);
+            }
+        }
+
+        // Filter files attributes
+        if ($request->has('attrs')) {
+            $attrs = $request->attrs;
+            $files = $files->selectRaw($attrs)->get();
+        } else {
+            $files = $files->get();
+        }
+
+        return response()->json($files, 200);
     }
 
     /**
