@@ -17,7 +17,7 @@ class File extends Model
             'name'        => "required|unique:files,name,{$id}|min:5|max:50",
             'description' => "max:1000",
             'file'        => "required|file|mimes:pdf,xls,xlsx,doc,docx,ppt,png,jpg,jpeg,tif,kml,kmz,zip,rar",
-            'project_id'  => "required"
+            'project_id'  => 'required'
         ];
     }
 

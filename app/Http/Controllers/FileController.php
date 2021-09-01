@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use App\Models\File;
 use Illuminate\Http\Request;
+use App\Repositories\FileRepository;
 
 class FileController extends Controller
 {
@@ -20,35 +21,28 @@ class FileController extends Controller
      */
     public function index(Request $request)
     {
-        $files = [];
+        $fileRepository = new FileRepository($this->file);
 
-        // Filter projects attributes
+        /* Define os campos a serem exibidos no "projeto" do arquivo. */
         if ($request->has('attrs_project')) {
-            $attrs_project = $request->attrs_project;
-            $files = $this->file->with('project:id,'.$attrs_project);
+            $attrs_project = 'project:id,'.$request->attrs_project;
+            $fileRepository->selectRelatedRegistersAttributes($attrs_project);
         } else {
-            $files = $this->file->with('project');
+            $fileRepository->selectRelatedRegistersAttributes('project');
         }
 
+        /* Define os filtros a serem aplicados nos campos para cada arquivo. (cláusula WHERE) */
         if ($request->has('filters')) {
-            $filters = str_replace( '\\', '', $request->filter );
-            $filters = explode( ';', $request->filters );
-
-            foreach( $filters as $key => $filter ) {
-                $f = explode(':', $filter);
-                $files = $files->where($f[0], $f[1], $f[2]);
-            }
+            $fileRepository->filter($request->filters);
         }
 
-        // Filter files attributes
+        /* Define os campos a serem exibidos nos arquivos. */
         if ($request->has('attrs')) {
-            $attrs = $request->attrs;
-            $files = $files->selectRaw($attrs)->get();
-        } else {
-            $files = $files->get();
+            $fileRepository->selectAttributes('id,'.$request->attrs.',project_id');
         }
 
-        return response()->json($files, 200);
+        return response()->json($fileRepository->getResult(), 200);
+
     }
 
     /**

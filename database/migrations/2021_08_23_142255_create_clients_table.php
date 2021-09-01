@@ -17,6 +17,8 @@ class CreateClientsTable extends Migration
             $table->id();
             $table->string('name', 40);
             $table->string('email', 30)->unique();
+            $table->boolean('is_admin')->default(0);
+            $table->boolean('is_available')->default(0);
             $table->timestamps();
         });
     }

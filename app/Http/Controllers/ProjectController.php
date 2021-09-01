@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Storage;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Repositories\ProjectRepository;
 
 class ProjectController extends Controller
 {
@@ -20,37 +20,30 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $projects = [];
+
+        $projectRepository = new ProjectRepository($this->project);
 
         /* Define os campos a serem exibidos nos "files" de cada projeto. */
         if ($request->has('attrs_files')) {
-            $attrs_files = $request->attrs_files;
-            $projects = $this->project->with('files:id,'.$attrs_files.',project_id');
+            $attrs_files = 'files:id,'.$request->attrs_files.',project_id';
+            $projectRepository->selectRelatedRegistersAttributes($attrs_files);
         } else {
-            $projects = $this->project->with('files');
+            $projectRepository->selectRelatedRegistersAttributes('files');
         }
 
         /* Define os filtros a serem aplicados nos campos para cada projeto. (cláusula WHERE) */
         if ($request->has('filters')) {
-            $filters = str_replace( '\\', '', $request->filter );
-            $filters = explode( ';', $request->filters );
-
-            foreach( $filters as $key => $filter ) {
-                $f = explode(':', $filter);
-                $projects = $projects->where($f[0], $f[1], $f[2]);
-            }
+            $projectRepository->filter($request->filters);
         }
 
         /* Define os campos a serem exibidos nos projeto. */
         if ($request->has('attrs')) {
-            $attrs = $request->attrs;
-            $projects = $projects->selectRaw('id,'.$attrs)->get();
-        } else {
-            $projects = $projects->get();
+            $projectRepository->selectAttributes('id,'.$request->attrs);
         }
 
-        return response()->json($projects, 200);
+        return response()->json($projectRepository->getResult(), 200);
 
+        // ----------------------------------------------------
         /* Forma para retornar a lista limpa, apenas os projetos, com e sem os arquivos, mas sem filtrar os atributos e os valores */
         //return response()->json($this->project->all(), 200);
         //return response()->json($this->project->with('files')->get(), 200);
@@ -116,7 +109,6 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        dd($request);
         $project = $this->project->find($id);
         if ( !$project ) {
             return response()->json(['error' => 'Projeto não encontrado.'], 404);
