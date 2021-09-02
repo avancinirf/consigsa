@@ -23,3 +23,7 @@ Route::prefix('/app')->group(function(){
     Route::get('/projetos', function() { return 'projetos'; })->name('site.projects');
     Route::get('/cursos', function() { return 'cursos'; })->name('site.courses');
 });
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
