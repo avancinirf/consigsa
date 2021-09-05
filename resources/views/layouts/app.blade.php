@@ -33,7 +33,30 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Pagina 1</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Pagina 2</a>
+                        </li>
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Clientes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('projetos') }}">Projetos</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Arquivos</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="#">Documentos</a>
+                                    <a class="dropdown-item" href="#">Geometrias</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">Imagens</a>
+                                </div>
+                            </li>
 
+                        @endauth
                     </ul>
 
                     <!-- Right Side Of Navbar -->
