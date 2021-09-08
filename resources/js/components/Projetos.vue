@@ -2,8 +2,14 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
+
                 <!-- Start search card -->
                 <card-component title="Gestão de projetos">
+
+                    <template v-slot:header>
+                        <button type="button" class="btn btn-success btn-sm float-right" data-toggle="modal" data-target="#addProjectModal"><i class="bi bi-plus-lg"></i></button>
+                    </template>
+
                     <template v-slot:body>
                         <div class="form-row">
                             <div class="col mb-3">
@@ -18,20 +24,25 @@
                             </div>
                         </div>
                     </template>
+
                     <template v-slot:footer>
                         <button type="submit" class="btn btn-primary btn-sm float-right">Pesquisar</button>
                     </template>
+
                 </card-component>
                 <!-- End search card -->
 
                 <!-- Start list card -->
                 <card-component title="Resultado da pesquisa">
+
                     <template v-slot:body>
                         <table-component></table-component>
                     </template>
+
                     <template v-slot:footer>
-                        <button type="button" class="btn btn-success btn-sm float-right" data-toggle="modal" data-target="#addProjectModal">Adicionar projeto</button>
+                        <!--<button type="button" class="btn btn-success btn-sm float-right" data-toggle="modal" data-target="#addProjectModal">Adicionar projeto</button>-->
                     </template>
+
                 </card-component>
                 <!-- End list card -->
             </div>
@@ -40,6 +51,12 @@
 
         <!-- Start modal -->
         <modal-component id="addProjectModal" title="Adicionar projeto">
+
+            <template v-slot:alerts>
+                <alert-component type="success" :details="transactionDetails" v-if="transactionStatus == 'success'" title="Cadastro realizado com sucesso!"></alert-component>
+                <alert-component type="danger" :details="transactionDetails" v-if="transactionStatus == 'error'" title="Erro ao cadastrar projeto."></alert-component>
+            </template>
+
             <template v-slot:body>
                 <div class="form-group">
                     <input-container-component id="addName" title="Nome do projeto" help-id="addNameHelp">
@@ -53,10 +70,12 @@
                     {{ clientId }}
                 </div>
             </template>
+
             <template v-slot:footer>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button type="button" class="btn btn-success" @click="save">Salvar</button>
             </template>
+
         </modal-component>
         <!-- End modal -->
 
@@ -64,16 +83,48 @@
 </template>
 
 <script>
+import AlertComponent from './AlertComponent.vue'
     export default {
+  components: { AlertComponent },
+        computed: {
+            token() {
+                let token = document.cookie.split(';').find(index => index.includes('token='))
+                token = token.split('=')[1]
+                token = `Bearer ${token}`
+                return token
+            }
+        },
         data() {
             return {
                 baseUrl: 'http://consigsa.test/api/v1/project',
                 clientId: '1',
                 projectName: '',
-                projectDescription: ''
+                projectDescription: '',
+                transactionStatus: '',
+                transactionDetails: {},
+                projects: []
             }
         },
+        mounted() {
+            this.getList()
+        },
         methods: {
+            getList() {
+                let config = {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': this.token
+                    }
+                }
+
+                axios.get(this.baseUrl, config)
+                    .then(response => {
+                        this.projects = response.data
+                    })
+                    .catch(errors => {
+                        console.log(errors)
+                    })
+            },
             save() {
                 let formData = new FormData();
 
@@ -84,16 +135,24 @@
                 let config = {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Authorization': this.token
                     }
                 }
 
                 axios.post(this.baseUrl, formData, config)
                     .then(response => {
-                        console.log(response)
+                        this.transactionStatus = 'success'
+                        this.transactionDetails = {
+                            message: `ID do registro: ${response.data.id}`
+                        }
                     })
                     .catch(errors => {
-                        console.log(errors)
+                        this.transactionStatus = 'error'
+                        this.transactionDetails = {
+                            message: `errors.response.data.message`,
+                            data: errors.response.data.errors
+                        }
                     })
             }
         }
