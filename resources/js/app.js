@@ -28,6 +28,7 @@ Vue.component('modal-component', require('./components/ModalComponent.vue').defa
 Vue.component('alert-component', require('./components/AlertComponent.vue').default);
 Vue.component('card-component', require('./components/CardComponent.vue').default);
 Vue.component('table-component', require('./components/TableComponent.vue').default);
+Vue.component('paginate-component', require('./components/PaginateComponent.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

@@ -41,7 +41,7 @@ class ProjectController extends Controller
             $projectRepository->selectAttributes('id,'.$request->attrs);
         }
 
-        return response()->json($projectRepository->getResult(), 200);
+        return response()->json($projectRepository->getPagedResult(3), 200);
 
         // ----------------------------------------------------
         /* Forma para retornar a lista limpa, apenas os projetos, com e sem os arquivos, mas sem filtrar os atributos e os valores */
