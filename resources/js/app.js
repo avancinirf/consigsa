@@ -8,6 +8,20 @@ require('./bootstrap');
 
 window.Vue = require('vue').default;
 
+import Vue from 'vue';
+/* Import VUEX config */
+import Vuex from 'Vuex';
+
+Vue.use(Vuex);
+
+const store = new Vuex.Store({
+    state: {
+        item: {},
+        transaction: { status: '', message: '', data: ''}
+    }
+})
+
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -36,6 +50,14 @@ Vue.component('paginate-component', require('./components/PaginateComponent.vue'
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+Vue.filter('convertDateToPT', function(d) {
+    if (!d) return ''
+    d = d.split('-')
+    return `${d[2]}/${d[1]}/${d[0]}`
+})
+
+
 const app = new Vue({
     el: '#app',
+    store
 });

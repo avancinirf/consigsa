@@ -53,6 +53,11 @@
                     <template v-slot:body>
                         <table-component
                             :data="projects.data"
+                            :actions="{
+                                view: { dataToggle: 'modal', dataTarget: '#viewProjectModal' },
+                                edit: { dataToggle: 'modal', dataTarget: '#editProjectModal' },
+                                remove: { dataToggle: 'modal', dataTarget: '#removeProjectModal' },
+                            }"
                             :titles="{
                                 id: {label: 'ID', type: 'text'},
                                 name: {label: 'Nome', type: 'text'},
@@ -83,7 +88,7 @@
         </div>
 
 
-        <!-- Start modal -->
+        <!-- Start ADD Project MODAL -->
         <modal-component id="addProjectModal" title="Adicionar projeto">
 
             <template v-slot:alerts>
@@ -106,31 +111,135 @@
                     <input-container-component id="addName" title="Nome do projeto" help-id="addNameHelp">
                         <input type="text" class="form-control" id="addName" aria-describedby="addNameHelp" placeholder="Nome do projeto" v-model="projectName">
                     </input-container-component>
-                    {{ projectName }}
                     <input-container-component id="addDescription" title="Descrição" help-id="descriptionHelp">
-                        <input type="text" class="form-control" id="addDescription" aria-describedby="descriptionHelp" placeholder="Descrição do projeto" v-model="projectDescription">
+                        <textarea class="form-control" id="addDescription" rows="3" aria-describedby="descriptionHelp" placeholder="Descrição do projeto" v-model="projectDescription">"</textarea>
                     </input-container-component>
-                    {{ projectDescription }}
-                    {{ clientId }}
                 </div>
             </template>
 
             <template v-slot:footer>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button type="button" class="btn btn-success" @click="save">Salvar</button>
+                <button type="button" class="btn btn-success" @click="save()">Salvar</button>
             </template>
 
         </modal-component>
-        <!-- End modal -->
+        <!-- End ADD Project MODAL -->
+
+
+        <!-- Start VIEW Project MODAL -->
+        <modal-component id="viewProjectModal" title="Visualizar projeto">
+
+            <template v-slot:alerts>
+            </template>
+
+            <template v-slot:body>
+                <input-container-component title="ID">
+                    <input type="text" class="form-control" :value="$store.state.item.id" disabled>
+                </input-container-component>
+                <input-container-component title="Nome">
+                    <input type="text" class="form-control" :value="$store.state.item.name" disabled>
+                </input-container-component>
+                <input-container-component title="Iniciado em">
+                    <input type="text" class="form-control" :value="$store.state.item.started_at" disabled>
+                </input-container-component>
+                <input-container-component title="Finalizado em">
+                    <input type="text" class="form-control" :value="$store.state.item.finished_at" disabled>
+                </input-container-component>
+                <input-container-component title="Descrição">
+                    <textarea class="form-control" id="addDescription" rows="3" :value="$store.state.item.description" disabled></textarea>
+                </input-container-component>
+
+                <!-- EXEMPLO DE CAMPO IMAGEM OU ARQUIVO -->
+                <!--
+                    O V-IF remove um erro ao criar o modal, pois no momento da criação,
+                    o campo com o nome da imagem ainda não existe. $store.state.item.imagem = undefined.
+                    Assim, apenas exibe o campo se houver uma imagem de fato. Isso serve para o link de arquivos.
+                -->
+                <!--
+                <input-container-component title="Finalizado em">
+                    <img :src="'storage/'+$store.state.item.imagem" v-if="$store.state.item.imagem">
+                </input-container-component>
+                -->
+            </template>
+
+            <template v-slot:footer>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </template>
+
+        </modal-component>
+        <!-- End VIEW Project MODAL -->
+
+
+        <!-- Start EDIT Project MODAL -->
+        <modal-component id="editProjectModal" title="Atualizar projeto">
+
+            <template v-slot:alerts>
+                <alert-component type="success" :details="$store.state.transaction" v-if="$store.state.transaction.status == 'success'" title="Projeto editado com sucesso!"></alert-component>
+                <alert-component type="danger" :details="$store.state.transaction" v-if="$store.state.transaction.status == 'error'" title="Erro ao editar projeto."></alert-component>
+            </template>
+
+            <template v-slot:body>
+                <input-container-component title="ID">
+                    <input type="text" class="form-control" :value="$store.state.item.id" disabled>
+                </input-container-component>
+                <input-container-component title="Nome">
+                    <input type="text" class="form-control" v-model="$store.state.item.name">
+                </input-container-component>
+                <input-container-component title="Iniciado em">
+                    <input type="text" class="form-control" v-model="$store.state.item.started_at">
+                </input-container-component>
+                <input-container-component title="Finalizado em">
+                    <input type="text" class="form-control" v-model="$store.state.item.finished_at">
+                </input-container-component>
+                <input-container-component title="Descrição">
+                    <textarea class="form-control" id="addDescription" rows="3" v-model="$store.state.item.description"></textarea>
+                </input-container-component>
+            </template>
+
+            <template v-slot:footer>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-success" @click="update()">Atualizar</button>
+            </template>
+
+        </modal-component>
+        <!-- End EDIT Project MODAL -->
+
+
+        <!-- Start REMOVE Project MODAL -->
+        <modal-component id="removeProjectModal" title="Remover projeto">
+
+            <template v-slot:alerts>
+                <alert-component type="success" :details="$store.state.transaction" v-if="$store.state.transaction.status == 'success'" title="Projeto removido com sucesso!"></alert-component>
+                <alert-component type="danger" :details="$store.state.transaction" v-if="$store.state.transaction.status == 'error'" title="Erro ao remover projeto."></alert-component>
+            </template>
+
+            <template v-slot:body v-if="$store.state.transaction.status != 'success'">
+                <input-container-component title="ID">
+                    <input type="text" class="form-control" :value="$store.state.item.id" disabled>
+                </input-container-component>
+                <input-container-component title="Nome">
+                    <input type="text" class="form-control" :value="$store.state.item.name" disabled>
+                </input-container-component>
+            </template>
+
+            <template v-slot:footer>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-danger" @click="remove" v-if="$store.state.transaction.status != 'success'">Remover</button>
+            </template>
+
+        </modal-component>
+        <!-- End REMOVE Project MODAL -->
+
 
     </div>
 </template>
 
 <script>
 import AlertComponent from './AlertComponent.vue'
+import InputContainerComponent from './InputContainerComponent.vue'
 import PaginateComponent from './PaginateComponent.vue'
     export default {
-  components: { AlertComponent, PaginateComponent },
+  components: { AlertComponent, PaginateComponent, InputContainerComponent },
         computed: {
             token() {
                 let token = document.cookie.split(';').find(index => index.includes('token='))
@@ -257,6 +366,68 @@ import PaginateComponent from './PaginateComponent.vue'
                             message: `errors.response.data.message`,
                             data: errors.response.data.errors
                         }
+                    })
+            },
+            update() {
+                let formData = new FormData()
+                formData.append('_method', 'patch')
+                formData.append('name', this.$store.state.item.name)
+                formData.append('description', this.$store.state.item.description)
+                if (!this.$store.state.item.started_at.length) this.$store.state.item.started_at = ''
+                if (!this.$store.state.item.finished_at.length) this.$store.state.item.finished_at = ''
+                formData.append('started_at', this.$store.state.item.started_at)
+                formData.append('finished_at', this.$store.state.item.finished_at)
+
+                let url = `${this.projectUrl}/${this.$store.state.item.id}`
+
+                let config = {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
+                        'Authorization': this.token
+                    }
+                }
+
+                axios.post(url, formData, config)
+                    .then(response => {
+                        // TODO : Caso exista um campo para upload de arquivo, deve ser limpo o campo pelo id
+                        // NomeDoCampoDeUploadDeArquivos.value = ''
+                        // colocar um IF no formData.append para o campo caso ele não existe, pois só iremos informar o valor dele se o arquivo for submetido
+                        this.$store.state.transaction.status = 'success'
+                        this.$store.state.transaction.message = 'Projeto atualizado com sucesso.'
+                        this.$store.state.transaction.data = ''
+                        this.getList()
+                    })
+                    .catch(errors => {
+                        this.$store.state.transaction.status = 'error'
+                        this.$store.state.transaction.message = errors.response.data.message
+                        this.$store.state.transaction.data = errors.response.data.errors
+                    })
+            },
+            remove() {
+                let confirmRemove = confirm('Tem certeza que deseja remover o registro?')
+                if (!confirmRemove) return
+
+                let url = `${this.projectUrl}/${this.$store.state.item.id}`
+                let formData = new FormData();
+                formData.append('_method', 'delete')
+
+                let config = {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': this.token
+                    }
+                }
+
+                axios.post(url, formData, config)
+                    .then(response => {
+                        this.$store.state.transaction.status = 'success'
+                        this.$store.state.transaction.message = response.data.message
+                        this.getList()
+                    })
+                    .catch(errors => {
+                        this.$store.state.transaction.status = 'error'
+                        this.$store.state.transaction.message = errors.response.data.error
                     })
             }
         }

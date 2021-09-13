@@ -16,8 +16,8 @@ class Project extends Model
             'client_id'   => 'exists:client,id',
             'name'        => "required|unique:projects,name,{$id}|min:5|max:50",
             'description' => 'max:1000',
-            'started_at'  => 'date',
-            'finished_at' => 'date',
+            'started_at'  => 'date|nullable',
+            'finished_at' => 'date|nullable',
             'client_id'   => 'required'
         ];
     }
