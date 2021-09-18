@@ -50,16 +50,6 @@ class ProjectController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -67,6 +57,7 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->all());
         $request->validate($this->project->rules(), $this->project->feedback());
 
         $project = $this->project->create($request->all());
@@ -146,4 +137,15 @@ class ProjectController extends Controller
         $project->delete();
         return response()->json(['message' => 'Projeto removido com sucesso.'], 200);
     }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('app.project.create');
+    }
+
 }

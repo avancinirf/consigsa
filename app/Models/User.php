@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\verifyEmailNotification;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -21,6 +23,8 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'admin',
+        'perfil',
     ];
 
     /**
@@ -64,4 +68,30 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    /**
+     * Sobrescreve o método padrão para envio de e-mail de recuperação de senha para manter
+     * o estilo mesmo com alterações futuras nos pacotes de dependências.
+     * Send reset password email link.
+     *
+     * @param string
+     * @return array
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token, $this->email, $this->name));
+    }
+
+    /**
+     * Sobrescreve o método padrão para envio de e-mail de validação de email
+     * o estilo mesmo com alterações futuras nos pacotes de dependências.
+     *
+     * @param string
+     * @return array
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new verifyEmailNotification($this->name));
+    }
+
 }

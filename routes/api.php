@@ -18,11 +18,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('v1')->middleware('jwt.auth')->group(function(){
+//Route::prefix('v1')->middleware('jwt.auth')->group(function(){
+Route::prefix('v1')->group(function(){
     Route::post('me', 'AuthController@me');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('logout', 'AuthController@logout');
-    Route::apiResource('client', 'ClientController');
     Route::apiResource('file', 'FileController');
     Route::apiResource('geotype', 'GeotypeController');
     Route::apiResource('project', 'ProjectController');

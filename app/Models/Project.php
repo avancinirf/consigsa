@@ -8,23 +8,23 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 {
     use HasFactory;
-    protected $fillable = ['client_id', 'name', 'description', 'started_at', 'finished_at'];
+    protected $fillable = ['user_id', 'name', 'description', 'started_at', 'finished_at'];
 
     public function rules() {
         $id = $this->id ?? 'NULL';
         return [
-            'client_id'   => 'exists:client,id',
+            'user_id'   => 'exists:user,id',
             'name'        => "required|unique:projects,name,{$id}|min:5|max:50",
             'description' => 'max:1000',
             'started_at'  => 'date',
             'finished_at' => 'date',
-            'client_id'   => 'required'
+            'user_id'   => 'required'
         ];
     }
 
     public function feedback() {
         return [
-            'client_id.required' => 'É obrigatório vincular um cliente ao projeto.',
+            'user_id.required' => 'É obrigatório vincular um usuário ao projeto.',
             'name.required'      => 'Campo nome é obrigatório.',
             'name.unique'        => 'Nome informado já existe.',
             'name.min'           => 'O nome possui no mínimo 3 de caracteres.',
@@ -34,8 +34,8 @@ class Project extends Model
         ];
     }
 
-    public function client() {
-        return $this->belongsTo('App\Models\Client');
+    public function user() {
+        return $this->belongsTo('App\Models\User');
     }
 
     public function files() {

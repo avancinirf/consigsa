@@ -15,7 +15,7 @@ class CreateProjectsTable extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('client_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('name', '50')->unique();
             $table->text('description')->nullable()->nullable();
             $table->date('started_at')->nullable();
@@ -23,7 +23,7 @@ class CreateProjectsTable extends Migration
             $table->timestamps();
 
             // Foreign Key (constraints)
-            $table->foreign('client_id')->references('id')->on('clients');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
